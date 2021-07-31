@@ -2,7 +2,8 @@
 
 import os
 from unittest import TestCase
-from models import db, connect_db, Message, User
+from models import db, connect_db, Message, User, Follows
+from bs4 import BeautifulSoup
 
 os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
 
@@ -74,3 +75,33 @@ class UserViewTestCase(TestCase):
             self.assertEqual(res.status_code, 200)
 
             self.assertIn("@sanrushpor1", str(res.data))
+
+    def setup_followers(self):
+        """Create test client, add sample data for followers"""
+        f1 = Follows(user_being_followed_id=self.user1_id, user_following_id=self.testuser_id)
+        f2 = Follows(user_being_followed_id=self.user2_id, user_following_id=self.testuser_id)
+        f3 = Follows(user_being_followed_id=self.testuser_id, user_following_id=self.user1_id)
+
+        db.session.add_all([f1,f2,f3])
+        db.session.commit()
+
+    # def test_user_show_with_followers(self):
+    #     """Test user_show to see if followers are being detected"""
+    #     with self.client as c:
+    #         res = c.get(f"/users/{self.testuser_id}")
+
+    #         self.assertEqual(res.status_code, 200)
+
+    #         self.assertIn("@sanrushpor1", str(res.data))
+    #         soup = BeautifulSoup(str(res.data), "html.parser")
+    #         found = soup.find_all("li", {"class": "stat"})
+    #         self.assertEqual(len(found), 4)
+
+    #         # test for a count of 0 messages
+    #         self.assertIn("0", found[0].text)
+
+    #         # Test for a count of 2 following
+    #         self.assertIn("2", found[1].text)
+
+    #         # Test for a count of 1 follower
+    #         self.assertIn("1", found[2].text)
