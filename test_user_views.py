@@ -44,6 +44,7 @@ class UserViewTestCase(TestCase):
         return res
     
     def test_users_index(self):
+        """Test feature that list_users"""
         with self.client as c:
             res = c.get('/users')
 
@@ -52,3 +53,24 @@ class UserViewTestCase(TestCase):
             self.assertIn("@LeoPeezy3", str(res.data))
             self.assertIn("@MegLP6", str(res.data))
             self.assertIn("@PaulieFBaby7", str(res.data))
+
+    def test_users_search(self):
+        """Test feature on list_users that allows users to be searched for with q param"""
+        with self.client as c:
+            res = c.get('/users?q=san')
+
+            self.assertIn("@sanrushpor1", str(res.data))
+
+            self.assertNotIn("@ExPorter", str(res.data))
+            self.assertNotIn("@LeoPeezy3", str(res.data))
+            self.assertNotIn("@MegLP6", str(res.data))
+            self.assertNotIn("@PaulieFBaby7", str(res.data))
+
+    def test_user_show(self):
+        """Test user profile page"""
+        with self.client as c:
+            res = c.get(f"/users/{self.testuser_id}")
+
+            self.assertEqual(res.status_code, 200)
+
+            self.assertIn("@sanrushpor1", str(res.data))
