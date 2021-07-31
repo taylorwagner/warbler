@@ -1,3 +1,5 @@
+"""User view tests."""
+
 import os
 from unittest import TestCase
 from models import db, connect_db, Message, User
@@ -16,15 +18,37 @@ class UserViewTestCase(TestCase):
 
     def setUp(self):
         """Create test client, add sample data."""
-
-        User.query.delete()
-        Message.query.delete()
+        db.drop_all()
+        db.create_all()
 
         self.client = app.test_client()
 
-        self.testuser = User.signup(username="testuser",
-                                    email="test@test.com",
-                                    password="testuser",
-                                    image_url=None)
+        self.testuser = User.signup(username="sanrushpor1", email="srptest@gmail.com", password="testsantana", image_url=None)
+        self.testuser_id = 917
+        self.testuser.id = self.testuser_id
+
+        self.user1 = User.signup("ExPorter", "fakeemail@aol.com", "password", None)
+        self.user1_id = 1216
+        self.user1.id = self.user1_id
+        self.user2 = User.signup("LeoPeezy3", "lenopatport2@gmail.com", "password", None)
+        self.user2_id = 710
+        self.user2.id = self.user2_id
+        self.user3 = User.signup("MegLP6", "bakingitup@fake.com", "password", None)
+        self.user4 = User.signup("PaulieFBaby7", "isnotreal@email.com", "password", None)
 
         db.session.commit()
+
+    def tearDown(self):
+        res = super().tearDown()
+        db.session.rollback()
+        return res
+    
+    def test_users_index(self):
+        with self.client as c:
+            res = c.get('/users')
+
+            self.assertIn("@sanrushpor1", str(res.data))
+            self.assertIn("@ExPorter", str(res.data))
+            self.assertIn("@LeoPeezy3", str(res.data))
+            self.assertIn("@MegLP6", str(res.data))
+            self.assertIn("@PaulieFBaby7", str(res.data))
