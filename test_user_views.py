@@ -105,3 +105,33 @@ class UserViewTestCase(TestCase):
 
             # # Test for a count of 1 follower
             # self.assertIn("1", found[2].text)
+
+    def test_show_following(self):
+        """Test show_following to see if followed users are detected"""
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser_id
+
+            res = c.get(f"/users/{self.testuser_id}/following")
+
+            self.assertEqual(res.status_code, 200)
+
+            # self.assertIn("@ExPorter", str(res.data))
+            # self.assertIn("@LeoPeezy3", str(res.data))
+            # self.assertNotIn("@MegLP6", str(res.data))
+            # self.assertNotIn("@PaulieFBaby7", str(res.data))
+
+    def test_show_followers(self):
+        """Test users_followers to see if users that are following are detected"""
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser_id
+
+            res = c.get(f"/users/{self.testuser_id}/followers")
+
+            self.assertEqual(res.status_code, 200)
+
+            # self.assertIn("@ExPorter", str(res.data))
+            # self.assertNotIn("@LeoPeezy3", str(res.data))
+            # self.assertNotIn("@MegLP6", str(res.data))
+            # self.assertNotIn("@PaulieFBaby7", str(res.data))
