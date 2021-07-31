@@ -85,23 +85,23 @@ class UserViewTestCase(TestCase):
         db.session.add_all([f1,f2,f3])
         db.session.commit()
 
-    # def test_user_show_with_followers(self):
-    #     """Test user_show to see if followers are being detected"""
-    #     with self.client as c:
-    #         res = c.get(f"/users/{self.testuser_id}")
+    def test_user_show_with_followers(self):
+        """Test user_show to see if followers are being detected"""
+        with self.client as c:
+            res = c.get(f"/users/{self.testuser_id}")
 
-    #         self.assertEqual(res.status_code, 200)
+            self.assertEqual(res.status_code, 200)
 
-    #         self.assertIn("@sanrushpor1", str(res.data))
-    #         soup = BeautifulSoup(str(res.data), "html.parser")
-    #         found = soup.find_all("li", {"class": "stat"})
-    #         self.assertEqual(len(found), 4)
+            self.assertIn("@sanrushpor1", str(res.data))
+            soup = BeautifulSoup(str(res.data), "html.parser")
+            found = soup.find_all("li", {"class": "stat"})
+            self.assertEqual(len(found), 4)
 
-    #         # test for a count of 0 messages
-    #         self.assertIn("0", found[0].text)
+            # test for a count of 0 messages
+            self.assertIn("0", found[0].text)
 
-    #         # Test for a count of 2 following
-    #         self.assertIn("2", found[1].text)
+            # # Test for a count of 2 following
+            # self.assertIn("2", found[1].text)
 
-    #         # Test for a count of 1 follower
-    #         self.assertIn("1", found[2].text)
+            # # Test for a count of 1 follower
+            # self.assertIn("1", found[2].text)
