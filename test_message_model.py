@@ -33,31 +33,14 @@ class MessageModelTestCase(TestCase):
         db.session.rollback()
         return res
 
+    def test_message_model(self):
+        """Does basic model work?"""
 
+        m = Message(text="testmessage", user_id=self.uid)
 
-# √=class Message(db.Model):
-#     """An individual message ("warble")."""
+        db.session.add(m)
+        db.session.commit()
 
-#     __tablename__ = 'messages'
-
-#     id = db.Column(
-#         db.Integer,
-#         primary_key=True,
-#     )
-
-#     text = db.Column(
-#         db.String(140),
-#         nullable=False,
-#     )
-
-#     timestamp = db.Column(
-#         db.DateTime,
-#         nullable=False,
-#         default=datetime.utcnow(),
-#     )
-
-#     user_id = db.Column(
-#         db.Integer,
-#         db.ForeignKey('users.id', ondelete='CASCADE'),
-#         nullable=False,
-#     )
+        # User should have 1 message
+        self.assertEqual(len(self.u.messages), 1)
+        self.assertEqual(self.u.messages[0].text, "testmessage")
