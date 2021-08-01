@@ -2,7 +2,7 @@
 import os
 from unittest import TestCase
 from sqlalchemy import exc
-from models import db, User, Message, Follows
+from models import db, User, Message, Likes
 
 os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
 
@@ -44,3 +44,23 @@ class MessageModelTestCase(TestCase):
         # User should have 1 message
         self.assertEqual(len(self.u.messages), 1)
         self.assertEqual(self.u.messages[0].text, "testmessage")
+
+    def test_message_likes(self):
+        """Test to verify that likes are being detected on messages."""
+        m1 = Message(text="ilovetesting", user_id=self.uid)
+
+        m2 = Message(text="learning a lot in warbler", user_id=self.uid)
+
+        u = User.signup("testusersignup", "testingtesting@test.com", "password", None)
+        uid = 121
+        u.id = uid
+        db.session.add_all([m1, m2, u])
+        db.session.commit()
+
+        u.likes.append(m1)
+
+        db.session.commit()
+
+        l = Likes.query.filter(Likes.user_id == uid).all()
+        # self.assertEqual(len(1), 1)
+        self.assertEqual(l[0].message_id, m1.id)
