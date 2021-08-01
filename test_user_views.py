@@ -87,6 +87,7 @@ class UserViewTestCase(TestCase):
 
     def test_user_show_with_followers(self):
         """Test user_show to see if followers are being detected"""
+        self.setup_followers()
         with self.client as c:
             res = c.get(f"/users/{self.testuser_id}")
 
@@ -100,14 +101,15 @@ class UserViewTestCase(TestCase):
             # test for a count of 0 messages
             self.assertIn("0", found[0].text)
 
-            # # Test for a count of 2 following
-            # self.assertIn("2", found[1].text)
+            # Test for a count of 2 following
+            self.assertIn("2", found[1].text)
 
-            # # Test for a count of 1 follower
-            # self.assertIn("1", found[2].text)
+            # Test for a count of 1 follower
+            self.assertIn("1", found[2].text)
 
     def test_show_following(self):
         """Test show_following to see if followed users are detected"""
+        self.setup_followers()
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser_id
@@ -116,13 +118,14 @@ class UserViewTestCase(TestCase):
 
             self.assertEqual(res.status_code, 200)
 
-            # self.assertIn("@ExPorter", str(res.data))
-            # self.assertIn("@LeoPeezy3", str(res.data))
-            # self.assertNotIn("@MegLP6", str(res.data))
-            # self.assertNotIn("@PaulieFBaby7", str(res.data))
+            self.assertIn("@ExPorter", str(res.data))
+            self.assertIn("@LeoPeezy3", str(res.data))
+            self.assertNotIn("@MegLP6", str(res.data))
+            self.assertNotIn("@PaulieFBaby7", str(res.data))
 
     def test_show_followers(self):
         """Test users_followers to see if users that are following are detected"""
+        self.setup_followers()
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser_id
@@ -131,7 +134,11 @@ class UserViewTestCase(TestCase):
 
             self.assertEqual(res.status_code, 200)
 
-            # self.assertIn("@ExPorter", str(res.data))
-            # self.assertNotIn("@LeoPeezy3", str(res.data))
-            # self.assertNotIn("@MegLP6", str(res.data))
-            # self.assertNotIn("@PaulieFBaby7", str(res.data))
+            self.assertIn("@ExPorter", str(res.data))
+            self.assertNotIn("@LeoPeezy3", str(res.data))
+            self.assertNotIn("@MegLP6", str(res.data))
+            self.assertNotIn("@PaulieFBaby7", str(res.data))
+
+    def test_unauthorized_following_page_access(self):
+        """"""
+        self.setup_followers()
