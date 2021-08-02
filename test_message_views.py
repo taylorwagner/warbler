@@ -109,3 +109,31 @@ class MessageViewTestCase(TestCase):
 
             self.assertEqual(res.status_code, 200)
             self.assertIn(m.text, str(res.data))
+
+    def test_invalid_message_show(self):
+        """Test that 404 page/message will kick in for an invalid message id"""
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            res = c.get("/messages/9ujh8y689")
+
+            self.assertEqual(res.status_code, 404)
+
+    def test_message_delete(self):
+        """Test that message will successfully delete"""
+        m = Message(id=98765, text="Message Delete Test", user_id=self.testuser.id)
+
+        db.session.add(m)
+        db.session.commit()
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            res = c.post("/messages/98765/delete", follow_redirects=True)
+
+            self.assertEqual(res.status_code, 200)
+
+            m = Message.query.get(98765)
+            self.assertIsNone(m)
