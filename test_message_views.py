@@ -43,8 +43,9 @@ class MessageViewTestCase(TestCase):
 
         self.client = app.test_client()
 
-        self.uid = 531
         self.testuser = User.signup(username="testuser", email="test@test.com", password="testuser", image_url=None)
+        self.testuser_id = 531
+        self.testuser.id = self.testuser_id
 
         db.session.commit()
 
@@ -73,3 +74,10 @@ class MessageViewTestCase(TestCase):
 
             msg = Message.query.one()
             self.assertEqual(msg.text, "Hello")
+
+    def test_unauthorized_new_message_access(self):
+        """Test that if no user is added to the session that there is no authorization to add a message."""
+        with self.client as c:
+            res = c.get("/messages/new", data={"text": "Testing Unauthorization"}, follow_redirects=True)
+            self.assertEqual(res.status_code, 200)
+            self.assertIn("Access unauthorized", str(res.data))
