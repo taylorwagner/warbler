@@ -83,6 +83,47 @@ class UserModelTestCase(TestCase):
     #     """Does repr method work for user model?"""
     #     self.assertEqual(self.SantanaRP.__repr__, "<User #1111: SanRushTest, srptest@email.com>")
 
+    ## SIGNUP TESTS:
+
+    def test_valid_signup(self):
+        """Test that a new user will register when validly signing up"""
+        u_test = User.signup("testuser", "realemail@email.com", "validpassword", None)
+        uid = 99999
+        u_test.id = uid
+        db.session.commit()
+
+        u_test = User.query.get(uid)
+        self.assertIsNotNone(u_test)
+        self.assertEqual(u_test.username, "testuser")
+        self.assertEqual(u_test.email, "realemail@email.com")
+        self.assertNotEqual(u_test.password, "validpassword")
+        # Bcrypt strings should start with $2b$
+        self.assertTrue(u_test.password.startswith("$2b$"))
+
+    def test_invalid_username_signup(self):
+        """Test that a new user will not register if there is no username included"""
+        invalid = User.signup(None, "nousername@notvalid.com", "validpassword", None)
+        uid = 123456789
+        invalid.id = uid
+        with self.assertRaises(exc.IntegrityError) as context:
+            db.session.commit()
+
+    def test_invalid_email_signup(self):
+        """Test that a new user will not register if there is no email included"""
+        invalid = User.signup("includingusername", None, "validpassword", None)
+        uid = 123789
+        invalid.id = uid
+        with self.assertRaises(exc.IntegrityError) as context:
+            db.session.commit()
+    
+    def test_invalid_password_signup(self):
+        """Test that a new user will not register if there is no password included"""
+        with self.assertRaises(ValueError) as context:
+            User.signup("emptypwfield", "cantthinkofpw@password.com", "", None)
+        
+        with self.assertRaises(ValueError) as context:
+            User.signup("forgottotypepw", "invalid@valid.com", None, None)
+
     ## FOLLOW TESTS:
 
     def test_is_following(self):
