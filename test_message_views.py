@@ -78,6 +78,34 @@ class MessageViewTestCase(TestCase):
     def test_unauthorized_new_message_access(self):
         """Test that if no user is added to the session that there is no authorization to add a message."""
         with self.client as c:
-            res = c.get("/messages/new", data={"text": "Testing Unauthorization"}, follow_redirects=True)
+            res = c.post("/messages/new", data={"text": "Testing Unauthorization"}, follow_redirects=True)
             self.assertEqual(res.status_code, 200)
             self.assertIn("Access unauthorized", str(res.data))
+
+    def test_add_invalid_user(self):
+        """Test to detect that 'access unauthorized' will kick in when the user_id does not exist."""
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = 9999999
+
+            res = c.post("/messages/new", data={"text": "Invalid User Id"}, follow_redirects=True)
+            self.assertEqual(res.status_code, 200)
+            self.assertIn("Access unauthorized", str(res.data))
+
+    def test_message_show(self):
+        """Test to detect that when an authorized user posts a valid message, the message shows."""
+        m = Message(id=123456, text="Yes this message should show!", user_id=self.testuser.id)
+
+        db.session.add(m)
+        db.session.commit()
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            m = Message.query.get(123456)
+
+            res = c.get(f"/messages/{m.id}")
+
+            self.assertEqual(res.status_code, 200)
+            self.assertIn(m.text, str(res.data))
