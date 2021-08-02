@@ -137,3 +137,44 @@ class MessageViewTestCase(TestCase):
 
             m = Message.query.get(98765)
             self.assertIsNone(m)
+
+    def test_message_delete(self):
+        """Test to make sure that someone that doesn't own the message cannot delete it."""
+        m = Message(id=9911, text="Not allowed to delete me", user_id=self.testuser.id)
+
+        db.session.add(m)
+        db.session.commit()
+
+        u = User.signup(username="tryToDeleteMsg", email="cannotdeleteothersmessages@gmail.com", password="password", image_url=None)
+        u.id = 121212
+
+        db.session.add(u)
+        db.session.commit()
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = u.id
+
+            res = c.post("/messages/9911/delete", follow_redirects=True)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertIn("Unauthorized", str(res.data))
+
+            m = Message.query.get(9911)
+            self.assertIsNotNone(m)
+
+    def test_message_delete_no_authentication(self):
+        """Test that message will not delete when no user is logged in."""
+        m = Message(id=2012, text="This message will not delete either!!!", user_id=self.testuser.id)
+
+        db.session.add(m)
+        db.session.commit()
+
+        with self.client as c:
+            res = c.post("/messages/2012/delete", follow_redirects=True)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertIn("Access unauthorized", str(res.data))
+
+            m = Message.query.get(2012)
+            self.assertIsNotNone(m)
