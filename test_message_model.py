@@ -62,5 +62,5 @@ class MessageModelTestCase(TestCase):
         db.session.commit()
 
         l = Likes.query.filter(Likes.user_id == uid).all()
-        # self.assertEqual(len(1), 1)
+        self.assertEqual(len(l), 1)
         self.assertEqual(l[0].message_id, m1.id)
